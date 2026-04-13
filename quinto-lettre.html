@@ -338,42 +338,102 @@ function valider(){
     showModal("<h2>✗ Grille non valide</h2>Grille incomplète.");
     return;
   }
+
+  // lignes (5 cases)
   const rows=[
     G().slice(0,5).join(""),
     G().slice(5,10).join(""),
     G().slice(10,15).join(""),
-    G().slice(15,20).join("")
+    G().slice(15,20).join(""),
+    G().slice(20,25).join("")
   ];
+
+  // colonnes (5 cases)
   const cols=[
-    G()[0]+G()[5]+G()[10]+G()[15],
-    G()[1]+G()[6]+G()[11]+G()[16],
-    G()[2]+G()[7]+G()[12]+G()[17],
-    G()[3]+G()[8]+G()[13]+G()[18],
-	G()[4]+G()[9]+G()[14]+G()[19]
+    G()[0]+G()[5]+G()[10]+G()[15]+G()[20],
+    G()[1]+G()[6]+G()[11]+G()[16]+G()[21],
+    G()[2]+G()[7]+G()[12]+G()[17]+G()[22],
+    G()[3]+G()[8]+G()[13]+G()[18]+G()[23],
+    G()[4]+G()[9]+G()[14]+G()[19]+G()[24]
   ];
-  function clean(w){
-  return w.replace(/■/g,"");
-}
-const ok = [...rows, ...cols].every(w=>{
-  const parts = w.split("■"); // 🔥 découpe sur les cases noires
 
-  return parts.every(part=>{
-    if(part.length === 0) return true; // ignore vide
-    
-	if(part.length === 5) return WORDS5.has(part);
-    if(part.length === 4) return WORDS4.has(part);
-    if(part.length === 3) return WORDS3.has(part);
-    if(part.length === 2) return WORDS2.has(part);
-    if(part.length === 1) return WORDS1.has(part);
+  const ok = [...rows, ...cols].every(w=>{
+    const parts = w.split("■");
 
-    return false;
+    return parts.every(part=>{
+      if(part.length === 0) return true;
+
+      if(part.length === 5) return WORDS5.has(part);
+      if(part.length === 4) return WORDS4.has(part);
+      if(part.length === 3) return WORDS3.has(part);
+      if(part.length === 2) return WORDS2.has(part);
+      if(part.length === 1) return WORDS1.has(part);
+
+      return false; // bloque les mots de 1 lettre
+    });
   });
-});
-
 
   showModal(ok
     ?"<h2>🎉 Bravo !</h2>Grille valide !"
     :"<h2>✗ Grille non valide</h2>Vous pouvez continuer.");
+}
+function scoreMot(m){
+  if(m.length < 2) return 0;
+  return m.length; // 2→2, 3→3, etc.
+}
+
+function valider(){
+  if(G().some(x=>!x)){
+    showModal("<h2>✗ Grille non valide</h2>Grille incomplète.");
+    return;
+  }
+
+  const rows=[
+    G().slice(0,5).join(""),
+    G().slice(5,10).join(""),
+    G().slice(10,15).join(""),
+    G().slice(15,20).join(""),
+    G().slice(20,25).join("")
+  ];
+
+  const cols=[
+    G()[0]+G()[5]+G()[10]+G()[15]+G()[20],
+    G()[1]+G()[6]+G()[11]+G()[16]+G()[21],
+    G()[2]+G()[7]+G()[12]+G()[17]+G()[22],
+    G()[3]+G()[8]+G()[13]+G()[18]+G()[23],
+    G()[4]+G()[9]+G()[14]+G()[19]+G()[24]
+  ];
+
+  let total = 0;
+  let ok = true;
+
+  [...rows, ...cols].forEach(w=>{
+    const parts = w.split("■");
+
+    parts.forEach(part=>{
+      if(part.length < 2) return;
+
+      let valid = false;
+
+      if(part.length === 5) valid = WORDS5.has(part);
+      else if(part.length === 4) valid = WORDS4.has(part);
+      else if(part.length === 3) valid = WORDS3.has(part);
+      else if(part.length === 2) valid = WORDS2.has(part);
+
+      if(valid){
+        total += scoreMot(part);
+      } else {
+        ok = false;
+      }
+    });
+  });
+
+  if(ok){
+    total += 25; // bonus grille complète
+    showModal(`<h2>🎉 Bravo !</h2>Score : ${total} points`);
+  } else {
+    showModal("<h2>✗ Grille non valide</h2>Vous pouvez continuer.");
+  }
 }
 
 /* ================= POPUP ================= */
@@ -407,3 +467,4 @@ setLvl("VERT"); // initialise VERT une seule fois puis navigation conserve tout
 
 </body>
 </html>
+
